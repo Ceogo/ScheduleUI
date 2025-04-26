@@ -11,10 +11,10 @@ const NotFoundPage: React.FC = () => {
         </div>
         
         <h1 className="text-6xl font-bold text-gray-800 mb-4">404</h1>
-        <h2 className="text-2xl font-semibold text-gray-700 mb-6">Page Not Found</h2>
+        <h2 className="text-2xl font-semibold text-gray-700 mb-6">Страница не найдена</h2>
         
         <p className="text-gray-600 mb-8">
-          The page you are looking for doesn't exist or has been moved.
+          Как вы здесь оказались? Этой страницы не существует
         </p>
         
         <NavLink 
@@ -22,7 +22,7 @@ const NotFoundPage: React.FC = () => {
           className="btn btn-primary py-3 px-8 flex items-center justify-center gap-2 mx-auto"
         >
           <ArrowLeft className="h-5 w-5" />
-          Back to Home
+          На главную
         </NavLink>
       </div>
     </div>
