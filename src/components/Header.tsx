@@ -51,11 +51,17 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
             </NavLink>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
+            <nav className="hidden md:flex items-center space-x-4">
               <NavLink
                   to="/"
                   className={({ isActive }) =>
-                      `nav-link ${isActive ? 'nav-link-active' : ''} ${transparent ? 'text-white/80 hover:text-white' : ''}`
+                      `px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                          isActive
+                              ? 'bg-primary text-white'
+                              : transparent
+                                  ? 'text-white/80 hover:text-white'
+                                  : 'text-gray-600 hover:bg-gray-100'
+                      }`
                   }
               >
                 Домой
@@ -63,7 +69,13 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
               <NavLink
                   to="/schedule"
                   className={({ isActive }) =>
-                      `nav-link ${isActive ? 'nav-link-active' : ''} ${transparent ? 'text-white/80 hover:text-white' : ''}`
+                      `px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                          isActive
+                              ? 'bg-primary text-white'
+                              : transparent
+                                  ? 'text-white/80 hover:text-white'
+                                  : 'text-gray-600 hover:bg-gray-100'
+                      }`
                   }
               >
                 Расписание
@@ -72,7 +84,13 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                   <NavLink
                       to={dashboardLink.path}
                       className={({ isActive }) =>
-                          `nav-link ${isActive ? 'nav-link-active' : ''} ${transparent ? 'text-white/80 hover:text-white' : ''}`
+                          `px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                              isActive
+                                  ? 'bg-primary text-white'
+                                  : transparent
+                                      ? 'text-white/80 hover:text-white'
+                                      : 'text-gray-600 hover:bg-gray-100'
+                          }`
                       }
                   >
                     {dashboardLink.label}
@@ -85,21 +103,25 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                 </span>
                     <button
                         onClick={handleLogout}
-                        className={`btn ${transparent ? 'bg-white text-primary' : 'btn-primary'}`}
+                        className={`px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
+                            transparent
+                                ? 'bg-white text-primary hover:bg-gray-100'
+                                : 'bg-primary text-white hover:bg-primary-dark'
+                        }`}
                     >
-                  <span className="flex items-center gap-2">
-                    <LogOut className="h-4 w-4" /> Выйти
-                  </span>
+                      <LogOut className="h-4 w-4" /> Выйти
                     </button>
                   </div>
               ) : (
                   <NavLink
                       to="/login"
-                      className={`btn ${transparent ? 'bg-white text-primary' : 'btn-primary'} ml-4`}
+                      className={`px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
+                          transparent
+                              ? 'bg-white text-primary hover:bg-gray-100'
+                              : 'bg-primary text-white hover:bg-primary-dark'
+                      } ml-4`}
                   >
-                <span className="flex items-center gap-2">
-                  <LogIn className="h-4 w-4" /> Войти
-                </span>
+                    <LogIn className="h-4 w-4" /> Войти
                   </NavLink>
               )}
             </nav>
@@ -108,23 +130,26 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
             <button
                 className="md:hidden p-2"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-label="Toggle menu"
+                aria-label="Переключить меню"
             >
-              {isMenuOpen
-                  ? <X className={`h-6 w-6 ${transparent ? 'text-white' : 'text-gray-800'}`} />
-                  : <Menu className={`h-6 w-6 ${transparent ? 'text-white' : 'text-gray-800'}`} />
-              }
+              {isMenuOpen ? (
+                  <X className={`h-6 w-6 ${transparent ? 'text-white' : 'text-gray-800'}`} />
+              ) : (
+                  <Menu className={`h-6 w-6 ${transparent ? 'text-white' : 'text-gray-800'}`} />
+              )}
             </button>
           </div>
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
               <nav className="md:hidden mt-4 py-4 bg-white rounded-lg shadow-lg animate-fade-in">
-                <div className="flex flex-col space-y-1">
+                <div className="flex flex-col space-y-2 px-4">
                   <NavLink
                       to="/"
                       className={({ isActive }) =>
-                          `sidebar-link ${isActive ? 'sidebar-link-active' : ''}`
+                          `px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                              isActive ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'
+                          }`
                       }
                       onClick={() => setIsMenuOpen(false)}
                   >
@@ -133,7 +158,9 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                   <NavLink
                       to="/schedule"
                       className={({ isActive }) =>
-                          `sidebar-link ${isActive ? 'sidebar-link-active' : ''}`
+                          `px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                              isActive ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'
+                          }`
                       }
                       onClick={() => setIsMenuOpen(false)}
                   >
@@ -143,7 +170,9 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                       <NavLink
                           to={dashboardLink.path}
                           className={({ isActive }) =>
-                              `sidebar-link ${isActive ? 'sidebar-link-active' : ''}`
+                              `px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                  isActive ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'
+                              }`
                           }
                           onClick={() => setIsMenuOpen(false)}
                       >
@@ -153,21 +182,17 @@ const Header: React.FC<HeaderProps> = ({ transparent = false }) => {
                   {user ? (
                       <button
                           onClick={handleLogout}
-                          className="btn btn-primary mx-4 mt-4 text-left"
+                          className="px-3 py-2 text-sm font-medium rounded-md bg-primary text-white hover:bg-primary-dark flex items-center gap-2 text-left"
                       >
-                  <span className="flex items-center justify-center gap-2">
-                    <LogOut className="h-4 w-4" /> Выйти
-                  </span>
+                        <LogOut className="h-4 w-4" /> Выйти
                       </button>
                   ) : (
                       <NavLink
                           to="/login"
-                          className="btn btn-primary mx-4 mt-4"
+                          className="px-3 py-2 text-sm font-medium rounded-md bg-primary text-white hover:bg-primary-dark flex items-center gap-2"
                           onClick={() => setIsMenuOpen(false)}
                       >
-                  <span className="flex items-center justify-center gap-2">
-                    <LogIn className="h-4 w-4" /> Войти
-                  </span>
+                        <LogIn className="h-4 w-4" /> Войти
                       </NavLink>
                   )}
                 </div>

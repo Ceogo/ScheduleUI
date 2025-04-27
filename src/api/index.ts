@@ -14,14 +14,16 @@ api.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+    config.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     return config;
 });
 
 api.interceptors.response.use(
-    response => response,
-    error => {
+    (response) => response,
+    (error) => {
         if (error.response?.status === 401) {
             localStorage.removeItem('authToken');
+            localStorage.removeItem('authUser');
             window.location.href = '/login';
         }
         return Promise.reject(error);
@@ -37,4 +39,38 @@ export const auth = {
         api.post<{ token: string }>('/api/register', data),
     logout: () => api.post('/api/logout'),
     getUser: () => api.get<User>('/api/user'),
+};
+
+export const schedule = {
+    getSchedule: (params: { group_id?: string; semester?: number; week?: number }) =>
+        api.get('/api/schedule', { params }),
+    createSchedule: (data: {
+        group_id: string;
+        learning_outcome_id: string;
+        day: string;
+        pair_number: number;
+        type: string;
+        week: number;
+        semester: number;
+    }) => api.post('/api/schedule', data),
+    updateSchedule: (id: string, data: { learning_outcome_id: string }) =>
+        api.put(`/api/schedule/${id}`, data),
+};
+
+export const learningOutcomes = {
+    getLearningOutcomes: () => api.get('/api/learning-outcomes'),
+};
+
+export const teacherStats = {
+    getStats: () => api.get('/api/teacher-stats'),
+};
+
+export const users = {
+    getUsers: (params: { role?: string } = {}) => api.get('/api/users', { params }),
+    createUser: (data: { name: string; email: string; role: string; password?: string }) =>
+        api.post('/api/users', data),
+};
+
+export const stats = {
+    getStats: () => api.get('/api/stats'),
 };

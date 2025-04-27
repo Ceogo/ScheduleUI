@@ -18,15 +18,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const loadUser = async () => {
             const token = localStorage.getItem('authToken');
-            if (token) {
+            const cachedUser = localStorage.getItem('authUser');
+
+            if (token && cachedUser) {
                 try {
-                    const { data } = await auth.getUser();
-                    setUser(data);
+                    setUser(JSON.parse(cachedUser));
+                    setLoading(false);
                 } catch (error) {
-                    logout();
+                    console.error('Ошибка парсинга кэшированного пользователя:', error);
+                    await validateToken(token);
                 }
+            } else if (token) {
+                // Если есть токен, но нет кэша пользователя, проверяем токен
+                await validateToken(token);
+            } else {
+                setLoading(false);
             }
-            setLoading(false);
+        };
+
+        const validateToken = async (token: string) => {
+            try {
+                const { data } = await auth.getUser();
+                localStorage.setItem('authUser', JSON.stringify(data));
+                setUser(data);
+            } catch (error) {
+                console.error('Ошибка проверки токена:', error);
+                await logout();
+            } finally {
+                setLoading(false);
+            }
         };
 
         loadUser();
@@ -34,8 +54,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const login = async (email: string, password: string, role: string) => {
         const { data } = await auth.login({ email, password, role });
-        localStorage.setItem('authToken', data.token); // Сохраняем токен
+        localStorage.setItem('authToken', data.token);
         const { data: userData } = await auth.getUser();
+        localStorage.setItem('authUser', JSON.stringify(userData));
         setUser(userData);
     };
 
@@ -44,6 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             await auth.logout();
         } finally {
             localStorage.removeItem('authToken');
+            localStorage.removeItem('authUser');
             setUser(null);
         }
     };

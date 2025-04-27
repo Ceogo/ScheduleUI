@@ -1,272 +1,281 @@
-import React from 'react';
-import { 
-  CalendarDays, 
-  Settings, 
-  User, 
-  Bell, 
-  Calendar, 
+import React, { useState, useEffect } from 'react';
+import {
+  CalendarDays,
+  Settings,
+  User,
+  Bell,
+  Calendar,
   Users,
   LineChart,
   Plus,
   FilePlus,
   BarChart3,
   PieChart,
-  TrendingUp 
+  TrendingUp, Loader2,
 } from 'lucide-react';
 import SidebarLayout from '../components/SidebarLayout';
 import StatCard from '../components/StatCard';
+import { users, stats } from '../api';
 
-const statsData = [
-  { id: 1, month: 'Jan', value: 65 },
-  { id: 2, month: 'Feb', value: 59 },
-  { id: 3, month: 'Mar', value: 80 },
-  { id: 4, month: 'Apr', value: 81 },
-  { id: 5, month: 'May', value: 56 },
-  { id: 6, month: 'Jun', value: 55 },
-  { id: 7, month: 'Jul', value: 40 },
-  { id: 8, month: 'Aug', value: 70 },
-  { id: 9, month: 'Sep', value: 90 },
-  { id: 10, month: 'Oct', value: 110 },
-  { id: 11, month: 'Nov', value: 90 },
-  { id: 12, month: 'Dec', value: 70 },
-];
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  joined: string;
+}
 
-// Calculate max value for scaling
-const maxValue = Math.max(...statsData.map(item => item.value));
+interface StatsData {
+  totalUsers: number;
+  activeStudents: number;
+  activeTeachers: number;
+  classesToday: number;
+}
 
 const AdminDashboard: React.FC = () => {
+  const [usersData, setUsers] = useState<UserData[]>([]);
+  const [statsData, setStats] = useState<StatsData>({
+    totalUsers: 0,
+    activeStudents: 0,
+    activeTeachers: 0,
+    classesToday: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [usersResponse, statsResponse] = await Promise.all([
+          users.getUsers(),
+          stats.getStats(),
+        ]);
+        setUsers(usersResponse.data);
+        setStats(statsResponse.data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Ошибка загрузки данных');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const sidebarLinks = [
-    { to: '/admin-dashboard', label: 'Dashboard', icon: <Calendar className="h-5 w-5" /> },
-    { to: '/schedules', label: 'Schedules', icon: <CalendarDays className="h-5 w-5" /> },
-    { to: '/users', label: 'Users', icon: <Users className="h-5 w-5" /> },
-    { to: '/analytics', label: 'Analytics', icon: <LineChart className="h-5 w-5" /> },
-    { to: '/profile', label: 'Profile', icon: <User className="h-5 w-5" /> },
-    { to: '/settings', label: 'Settings', icon: <Settings className="h-5 w-5" /> },
-    { to: '/notifications', label: 'Notifications', icon: <Bell className="h-5 w-5" /> },
+    { to: '/admin-dashboard', label: 'Дашборд', icon: <Calendar className="h-5 w-5" /> },
+    { to: '/schedules', label: 'Расписания', icon: <CalendarDays className="h-5 w-5" /> },
+    { to: '/users', label: 'Пользователи', icon: <Users className="h-5 w-5" /> },
+    { to: '/analytics', label: 'Аналитика', icon: <LineChart className="h-5 w-5" /> },
+    { to: '/profile', label: 'Профиль', icon: <User className="h-5 w-5" /> },
+    { to: '/settings', label: 'Настройки', icon: <Settings className="h-5 w-5" /> },
+    { to: '/notifications', label: 'Уведомления', icon: <Bell className="h-5 w-5" /> },
   ];
 
-  return (
-    <SidebarLayout
-      links={sidebarLinks}
-      title="Admin Dashboard"
-      userRole="Administrator"
-      userName="Robert Williams"
-    >
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          title="Total Users"
-          value="1,248"
-          icon={<Users className="h-6 w-6" />}
-          trend={{ value: 12, isPositive: true }}
-        />
-        <StatCard
-          title="Active Students"
-          value="986"
-          icon={<User className="h-6 w-6" />}
-          trend={{ value: 8, isPositive: true }}
-        />
-        <StatCard
-          title="Active Teachers"
-          value="124"
-          icon={<User className="h-6 w-6" />}
-          trend={{ value: 5, isPositive: true }}
-        />
-        <StatCard
-          title="Classes Today"
-          value="68"
-          icon={<Calendar className="h-6 w-6" />}
-        />
-      </div>
-      
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-4 mb-8">
-        <button className="btn btn-primary flex items-center gap-2">
-          <Plus className="h-5 w-5" /> Add New User
-        </button>
-        <button className="btn btn-primary flex items-center gap-2">
-          <FilePlus className="h-5 w-5" /> Create Schedule
-        </button>
-        <button className="btn btn-secondary flex items-center gap-2">
-          <LineChart className="h-5 w-5" /> View Detailed Reports
-        </button>
-      </div>
-      
-      {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* User Growth Chart */}
-        <div className="card">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold">User Growth</h3>
-            <div className="flex items-center">
-              <TrendingUp className="h-5 w-5 text-green-500 mr-1" />
-              <span className="text-green-500 font-medium">+12%</span>
-            </div>
-          </div>
-          
-          <div className="h-64 w-full">
-            <div className="flex h-full items-end">
-              {statsData.map((item) => (
-                <div key={item.id} className="flex-1 flex flex-col items-center">
-                  <div 
-                    className="bg-primary/90 hover:bg-primary w-full mx-1 rounded-t-sm transition-all" 
-                    style={{ height: `${(item.value / maxValue) * 100}%` }}
-                  ></div>
-                  <span className="text-xs mt-2 text-gray-600">{item.month}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        
-        {/* User Distribution */}
-        <div className="card">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold">User Distribution</h3>
-            <div className="text-gray-500">
-              <PieChart className="h-5 w-5" />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-4">
-            <div className="flex items-center">
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div className="bg-primary h-4 rounded-full" style={{ width: '65%' }}></div>
-              </div>
-              <span className="ml-4 text-sm font-medium">Students (65%)</span>
-            </div>
-            
-            <div className="flex items-center">
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div className="bg-accent h-4 rounded-full" style={{ width: '25%' }}></div>
-              </div>
-              <span className="ml-4 text-sm font-medium">Teachers (25%)</span>
-            </div>
-            
-            <div className="flex items-center">
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div className="bg-yellow-500 h-4 rounded-full" style={{ width: '8%' }}></div>
-              </div>
-              <span className="ml-4 text-sm font-medium">Staff (8%)</span>
-            </div>
-            
-            <div className="flex items-center">
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div className="bg-red-500 h-4 rounded-full" style={{ width: '2%' }}></div>
-              </div>
-              <span className="ml-4 text-sm font-medium">Administrators (2%)</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Recent Users */}
-      <section>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Recent Users</h2>
-          <button className="text-primary hover:text-primary-dark text-sm font-medium">
-            View All
+  const chartData = [
+    { id: 1, month: 'Янв', value: 65 },
+    { id: 2, month: 'Фев', value: 59 },
+    { id: 3, month: 'Мар', value: 80 },
+    { id: 4, month: 'Апр', value: 81 },
+    { id: 5, month: 'Май', value: 56 },
+    { id: 6, month: 'Июн', value: 55 },
+    { id: 7, month: 'Июл', value: 40 },
+    { id: 8, month: 'Авг', value: 70 },
+    { id: 9, month: 'Сен', value: 90 },
+    { id: 10, month: 'Окт', value: 110 },
+    { id: 11, month: 'Ноя', value: 90 },
+    { id: 12, month: 'Дек', value: 70 },
+  ];
+
+  const maxValue = Math.max(...chartData.map((item) => item.value));
+
+  const handleAddUser = async () => {
+    try {
+      await users.createUser({
+        name: 'Новый пользователь',
+        email: `user${Date.now()}@example.com`,
+        role: 'student',
+      });
+      const response = await users.getUsers();
+      setUsers(response.data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Ошибка добавления пользователя');
+      console.error(err);
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">
+      <Loader2 className="w-10 h-10 animate-spin text-gray-500" />
+    </div>;
+  }
+
+  if (error) {
+    return (
+        <div className="text-center py-8 text-red-600">
+          {error}
+          <button
+              className="ml-4 text-primary hover:underline"
+              onClick={() => setError(null)}
+          >
+            Очистить
           </button>
         </div>
-        
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th className="table-header">Name</th>
-                <th className="table-header">Email</th>
-                <th className="table-header">Role</th>
-                <th className="table-header">Status</th>
-                <th className="table-header">Joined</th>
-                <th className="table-header">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              <tr>
-                <td className="table-cell font-medium">John Doe</td>
-                <td className="table-cell">john.doe@example.com</td>
-                <td className="table-cell">Student</td>
-                <td className="table-cell">
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Active
-                  </span>
-                </td>
-                <td className="table-cell">Oct 15, 2023</td>
-                <td className="table-cell">
-                  <button className="text-gray-500 hover:text-primary mr-2">
-                    <User className="h-5 w-5" />
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td className="table-cell font-medium">Jane Smith</td>
-                <td className="table-cell">jane.smith@example.com</td>
-                <td className="table-cell">Teacher</td>
-                <td className="table-cell">
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Active
-                  </span>
-                </td>
-                <td className="table-cell">Oct 12, 2023</td>
-                <td className="table-cell">
-                  <button className="text-gray-500 hover:text-primary mr-2">
-                    <User className="h-5 w-5" />
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td className="table-cell font-medium">Michael Johnson</td>
-                <td className="table-cell">michael.j@example.com</td>
-                <td className="table-cell">Student</td>
-                <td className="table-cell">
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    Pending
-                  </span>
-                </td>
-                <td className="table-cell">Oct 10, 2023</td>
-                <td className="table-cell">
-                  <button className="text-gray-500 hover:text-primary mr-2">
-                    <User className="h-5 w-5" />
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td className="table-cell font-medium">Emily Davis</td>
-                <td className="table-cell">emily.d@example.com</td>
-                <td className="table-cell">Teacher</td>
-                <td className="table-cell">
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Active
-                  </span>
-                </td>
-                <td className="table-cell">Oct 8, 2023</td>
-                <td className="table-cell">
-                  <button className="text-gray-500 hover:text-primary mr-2">
-                    <User className="h-5 w-5" />
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td className="table-cell font-medium">Robert Williams</td>
-                <td className="table-cell">robert.w@example.com</td>
-                <td className="table-cell">Admin</td>
-                <td className="table-cell">
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Active
-                  </span>
-                </td>
-                <td className="table-cell">Oct 5, 2023</td>
-                <td className="table-cell">
-                  <button className="text-gray-500 hover:text-primary mr-2">
-                    <User className="h-5 w-5" />
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+    );
+  }
+
+  return (
+      <SidebarLayout
+          links={sidebarLinks}
+          title="Админ-панель"
+          userRole="Администратор"
+          userName="Роберт Уильямс"
+      >
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+              title="Всего пользователей"
+              value={statsData.totalUsers}
+              icon={<Users className="h-6 w-6" />}
+              trend={{ value: 12, isPositive: true }}
+          />
+          <StatCard
+              title="Активные студенты"
+              value={statsData.activeStudents}
+              icon={<User className="h-6 w-6" />}
+              trend={{ value: 8, isPositive: true }}
+          />
+          <StatCard
+              title="Активные преподаватели"
+              value={statsData.activeTeachers}
+              icon={<User className="h-6 w-6" />}
+              trend={{ value: 5, isPositive: true }}
+          />
+          <StatCard
+              title="Занятий сегодня"
+              value={statsData.classesToday}
+              icon={<Calendar className="h-6 w-6" />}
+          />
         </div>
-      </section>
-    </SidebarLayout>
+
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-4 mb-8">
+          <button
+              onClick={handleAddUser}
+              className="btn btn-primary flex items-center gap-2"
+          >
+            <Plus className="h-5 w-5" /> Добавить пользователя
+          </button>
+          <button className="btn btn-primary flex items-center gap-2">
+            <FilePlus className="h-5 w-5" /> Создать расписание
+          </button>
+          <button className="btn btn-secondary flex items-center gap-2">
+            <LineChart className="h-5 w-5" /> Подробные отчеты
+          </button>
+        </div>
+
+        {/* Charts and Analytics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* User Growth Chart */}
+          <div className="card">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Рост пользователей</h3>
+              <div className="flex items-center">
+                <TrendingUp className="h-5 w-5 text-green-500 mr-1" />
+                <span className="text-green-500 font-medium">+12%</span>
+              </div>
+            </div>
+            <div className="h-64 w-full">
+              <div className="flex h-full items-end">
+                {chartData.map((item) => (
+                    <div key={item.id} className="flex-1 flex flex-col items-center">
+                      <div
+                          className="bg-primary/90 hover:bg-primary w-full mx-1 rounded-t-sm transition-all"
+                          style={{ height: `${(item.value / maxValue) * 100}%` }}
+                      ></div>
+                      <span className="text-xs mt-2 text-gray-600">{item.month}</span>
+                    </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* User Distribution */}
+          <div className="card">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Распределение пользователей</h3>
+              <div className="text-gray-500">
+                <PieChart className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center">
+                <div className="w-full bg-gray-200 rounded-full h-4">
+                  <div className="bg-primary h-4 rounded-full" style={{ width: '65%' }}></div>
+                </div>
+                <span className="ml-4 text-sm font-medium">Студенты (65%)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-full bg-gray-200 rounded-full h-4">
+                  <div className="bg-accent h-4 rounded-full" style={{ width: '25%' }}></div>
+                </div>
+                <span className="ml-4 text-sm font-medium">Преподаватели (25%)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-full bg-gray-200 rounded-full h-4">
+                  <div className="bg-yellow-500 h-4 rounded-full" style={{ width: '8%' }}></div>
+                </div>
+                <span className="ml-4 text-sm font-medium">Персонал (8%)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-full bg-gray-200 rounded-full h-4">
+                  <div className="bg-red-500 h-4 rounded-full" style={{ width: '2%' }}></div>
+                </div>
+                <span className="ml-4 text-sm font-medium">Администраторы (2%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Users */}
+        <section>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Последние пользователи</h2>
+            <button className="text-primary hover:text-primary-dark text-sm font-medium">
+              Посмотреть всех
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+              <tr>
+                <th className="table-header">Имя</th>
+                <th className="table-header">Email</th>
+                <th className="table-header">Роль</th>
+                <th className="table-header">Дата регистрации</th>
+                <th className="table-header">Действия</th>
+              </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+              {usersData.map((user) => (
+                  <tr key={user.id}>
+                    <td className="table-cell font-medium">{user.name}</td>
+                    <td className="table-cell">{user.email}</td>
+                    <td className="table-cell">{user.role}</td>
+                    <td className="table-cell">{user.joined}</td>
+                    <td className="table-cell">
+                      <button className="text-gray-500 hover:text-primary mr-2">
+                        <User className="h-5 w-5" />
+                      </button>
+                    </td>
+                  </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </SidebarLayout>
   );
 };
 
